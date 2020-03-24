@@ -11,6 +11,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
@@ -26,7 +28,7 @@ public class UsuarioRepositoryTest {
 
     @Test
     @DisplayName("Deve retornar verdadeiro quando existir usuario na base com email informado.")
-    public void retorneVerdadeiroCasoExista(){
+    public void retorneVerdadeiroCasoExistaTest(){
 
         //cenario
         String email = "fulano@gmail.com";
@@ -42,7 +44,7 @@ public class UsuarioRepositoryTest {
 
     @Test
     @DisplayName("Deve retornar falso quando existir usuario na base com email informado.")
-    public void retorneFalsoCasoExista(){
+    public void retorneFalsoCasoExistaTest(){
 
         //cenario
         String email = "fulano@gmail.com";
@@ -52,6 +54,49 @@ public class UsuarioRepositoryTest {
 
         //verificacao
         assertThat(existe).isFalse();
+    }
+
+    @Test
+    @DisplayName("Deve buscar usuario por id.")
+    public void buscarUsuarioTest(){
+        //cenario
+        Usuario usuario = getUsuario();
+        entityManager.persist(usuario);
+
+        //execucao
+        Optional<Usuario> usuarioOptional = repository.findById(usuario.getId());
+
+        //verificacao
+        assertThat(usuarioOptional.isPresent()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Deve salvar usuario.")
+    public void salvarUsuarioTest(){
+        //cenario
+        Usuario usuario = getUsuario();
+
+        //execucao
+        Usuario usuarioSalvo = repository.save(usuario);
+
+        //Verificacao
+        assertThat(usuarioSalvo.getId()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Deve deletar um usuario.")
+    public void deletUsuarioTest(){
+        //cenario
+        Usuario usuarioASalvar = getUsuario();
+        entityManager.persist(usuarioASalvar);
+        Usuario usuario = entityManager.find(Usuario.class, usuarioASalvar.getId());
+
+        //execucao
+        repository.delete(usuario);
+        Usuario usuarioDeletado = entityManager.find(Usuario.class, usuarioASalvar.getId());
+
+        //verificacao
+        assertThat(usuarioDeletado).isNull();
     }
 
     private Usuario getUsuario() {

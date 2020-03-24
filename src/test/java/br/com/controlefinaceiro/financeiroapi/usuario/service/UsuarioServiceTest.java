@@ -17,6 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -63,7 +64,7 @@ public class UsuarioServiceTest {
 
     @Test
     @DisplayName("Deve lancar erro de negocio ao salvar usuario com email duplicado.")
-    public void erroAoSalvarUsuarioComEmialDuplicado(){
+    public void erroAoSalvarUsuarioComEmialDuplicadoTest(){
 
         //cenario
         Usuario usuario = getUsuario();
@@ -78,6 +79,102 @@ public class UsuarioServiceTest {
                 .hasMessage("Email ja cadastrado.");
 
         Mockito.verify(repository,Mockito.never()).save(usuario);
+    }
+
+    @Test
+    @DisplayName("Deve buscar um usuario por id.")
+    public void buscarUsuarioPorIdTest(){
+        //cenario
+        Long id =1l;
+        Usuario usuario = getUsuario();
+        usuario.setId(id);
+        Mockito.when(repository.findById(id)).thenReturn(Optional.of(usuario));
+
+        //execucao
+        Optional<Usuario> usuarioOptional = service.getById(id);
+
+        //verificacao
+        assertThat(usuarioOptional.isPresent()).isTrue();
+        assertThat(usuarioOptional.get().getId()).isEqualTo(id);
+    }
+
+    @Test
+    @DisplayName("Deve retornar vazio ao buscar um usuario por id que nao foi encontrado.")
+    public void buscarUsuarioPorIdInexistenteTest(){
+        //cenario
+        Long id =1l;
+        Mockito.when(repository.findById(id)).thenReturn(Optional.empty());
+
+        //execucao
+        Optional<Usuario> usuarioOptional = service.getById(id);
+
+        //verificacao
+        assertThat(usuarioOptional.isPresent()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Deve deletar usuario caso exista")
+    public void deletarUsuarioTest(){
+        //cenario
+        Usuario usuario = getUsuario();
+        usuario.setId(1l);
+
+        //execucao
+        org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> service.delete(usuario));
+
+        //verificacao
+        Mockito.verify(repository, Mockito.times(1)).delete(usuario);
+    }
+
+    @Test
+    @DisplayName("Deve retornar erro ao tentar deletar usuario vazio.")
+    public void deletarUsuarioIlegalTest(){
+        //cenario
+        Usuario usuario = null;
+        //execucao
+        Throwable exception = Assertions.catchThrowable(() -> service.delete(usuario));
+
+        //verificacao
+        assertThat(exception)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Obrigatorio usuario para deletar.");
+        Mockito.verify(repository, Mockito.never()).delete(usuario);
+    }
+
+    @Test
+    @DisplayName("Deve deletar usuario caso exista")
+    public void atualizarUsuarioTest(){
+        //cenario
+
+        long id = 1l;
+        Usuario usuarioAAtualizar = Usuario.builder().id(id).build();
+
+        Usuario usuarioAtualizado = getUsuario();
+        usuarioAtualizado.setId(id);
+        Mockito.when(repository.save(usuarioAAtualizar)).thenReturn(usuarioAtualizado);
+
+        //execucao
+        Usuario usuario = service.update(usuarioAAtualizar);
+
+        //verificacao
+        assertThat(usuario).isNotEqualTo(null);
+        assertThat(usuario.getId()).isEqualTo(usuarioAtualizado.getId());
+        assertThat(usuario.getNome()).isEqualTo(usuarioAtualizado.getNome());
+    }
+
+    @Test
+    @DisplayName("Deve retornar erro ao tentar deletar usuario vazio.")
+    public void atualizarUsuarioIlegalTest(){
+        //cenario
+        Usuario usuario = null;
+        //execucao
+        Throwable exception = Assertions.catchThrowable(() -> service.update(usuario));
+
+        //verificacao
+        assertThat(exception)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Obrigatorio usuario para atualizar.");
+        Mockito.verify(repository, Mockito.never()).save(usuario);
     }
 
     private Usuario getUsuario() {
