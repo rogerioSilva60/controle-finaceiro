@@ -3,6 +3,7 @@ package br.com.controlefinaceiro.financeiroapi.usuario.service;
 import br.com.controlefinaceiro.financeiroapi.usuario.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 

@@ -4,6 +4,7 @@ import br.com.controlefinaceiro.financeiroapi.usuario.dto.UserDto;
 import br.com.controlefinaceiro.financeiroapi.usuario.entity.User;
 import br.com.controlefinaceiro.financeiroapi.usuario.service.UserService;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

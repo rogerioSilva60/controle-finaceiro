@@ -16,11 +16,11 @@ import java.util.Date;
 public class UserDto {
 
     private Long id;
-    @NotEmpty
+    @NotEmpty(message = "Nome obrigatório")
     private String name;
-    @NotEmpty
+    @NotEmpty(message = "Email obrigatório")
     private String email;
-    @NotEmpty
+    @NotEmpty(message = "Telefone obrigatório")
     private String phone;
 
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "America/Fortaleza")

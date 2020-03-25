@@ -39,9 +39,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserControllerTests {
 
     private static final String USER_API = "/api/usuario";
+
     @Autowired
     MockMvc mvc;
-
     @MockBean
     UserService service;
 
@@ -102,7 +102,7 @@ public class UserControllerTests {
         //Verificacao
         mvc.perform(request)
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("errors", Matchers.hasSize(3)));
+                .andExpect(jsonPath("message.errors", Matchers.hasSize(3)));
     }
 
     @Test
@@ -128,13 +128,13 @@ public class UserControllerTests {
         //Verificacao
         mvc.perform(request)
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("errors", Matchers.hasSize(1)))
-                .andExpect(jsonPath("errors[0]").value(mensagemError));
+                .andExpect(jsonPath("message.errors", Matchers.hasSize(1)))
+                .andExpect(jsonPath("message.errors[0]").value(mensagemError));
     }
 
     @Test
-    @DisplayName("Deve obter o usuario.")
-    public void obterUsuarioTest() throws Exception{
+    @DisplayName("Deve obter o usuario por id.")
+    public void getUserByIdTest() throws Exception{
         //Cenario
         long idUser = 1l;
 
