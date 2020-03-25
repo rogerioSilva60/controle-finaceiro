@@ -13,17 +13,17 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioDto {
+public class UserDto {
 
     private Long id;
     @NotEmpty
-    private String nome;
+    private String name;
     @NotEmpty
     private String email;
     @NotEmpty
-    private String telefone;
+    private String phone;
 
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "America/Fortaleza")
-    private Date dataNascimento;
+    private Date birthDate;
 
 }

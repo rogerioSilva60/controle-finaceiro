@@ -12,21 +12,21 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "Usuario")
-@Table(name = "usuario")
-public class Usuario {
+@Entity(name = "User")
+@Table(name = "user")
+public class User {
 
     @Id
     @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column
-    private String nome;
+    private String name;
     @Column
     private String email;
     @Column
-    private String telefone;
+    private String phone;
 
-    @Column(name = "data_nascimento")
-    private Date dataNascimento;
+    @Column(name = "birth_date")
+    private Date birthDate;
 }

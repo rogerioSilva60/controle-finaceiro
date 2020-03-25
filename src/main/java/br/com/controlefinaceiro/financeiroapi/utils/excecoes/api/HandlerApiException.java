@@ -13,16 +13,16 @@ public class HandlerApiException {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiErros handleValidationExceptions(MethodArgumentNotValidException ex){
+    public ApiErrors handleValidationExceptions(MethodArgumentNotValidException ex){
         BindingResult bindingResult = ex.getBindingResult();
-        ApiErros apiErros = new ApiErros(bindingResult);
+        ApiErrors apiErros = new ApiErrors(bindingResult);
         return apiErros;
     }
 
     @ExceptionHandler(BusinessException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiErros handleBusinessException(BusinessException ex){
-        ApiErros apiErros = new ApiErros(ex);
+    public ApiErrors handleBusinessException(BusinessException ex){
+        ApiErrors apiErros = new ApiErrors(ex);
         return apiErros;
     }
 }

@@ -1,9 +1,9 @@
 package br.com.controlefinaceiro.financeiroapi.usuario.controller;
 
-import br.com.controlefinaceiro.financeiroapi.usuario.dto.UsuarioDto;
-import br.com.controlefinaceiro.financeiroapi.usuario.entity.Usuario;
-import br.com.controlefinaceiro.financeiroapi.usuario.service.UsuarioService;
-import br.com.controlefinaceiro.financeiroapi.utils.DataHora;
+import br.com.controlefinaceiro.financeiroapi.usuario.dto.UserDto;
+import br.com.controlefinaceiro.financeiroapi.usuario.entity.User;
+import br.com.controlefinaceiro.financeiroapi.usuario.service.UserService;
+import br.com.controlefinaceiro.financeiroapi.utils.DateTime;
 import br.com.controlefinaceiro.financeiroapi.utils.excecoes.BusinessException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
@@ -16,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -23,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -32,36 +36,36 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @WebMvcTest
 @AutoConfigureMockMvc
-public class UsuarioControllerTests {
+public class UserControllerTests {
 
-    private static final String USUARIO_API = "/api/usuario";
+    private static final String USER_API = "/api/usuario";
     @Autowired
     MockMvc mvc;
 
     @MockBean
-    UsuarioService usuarioService;
+    UserService service;
 
     @Test
     @DisplayName("Deve criar um usuário com sucesso.")
-    public void criarUsuarioTest() throws Exception {
+    public void createUserTest() throws Exception {
 
         //Cenario
-        UsuarioDto dto = getUsuarioDto();
-        String dataFormatada = DataHora.dataFormatada(dto.getDataNascimento(),"yyyy-MM-dd");
+        UserDto dto = getUsuarioDto();
+        String dataFormatada = DateTime.formattedDate(dto.getBirthDate(),"yyyy-MM-dd");
 
-        Usuario usuarioFake = Usuario.builder().id(1l).nome(dto.getNome()).telefone(dto.getTelefone())
-                .email(dto.getEmail()).dataNascimento(dto.getDataNascimento()).build();
+        User userFake = User.builder().id(1l).name(dto.getName()).phone(dto.getPhone())
+                .email(dto.getEmail()).birthDate(dto.getBirthDate()).build();
 
         //Simulando a resposta ao criar o usuario.
-        BDDMockito.given(usuarioService.save(Mockito.any(Usuario.class)))
-                .willReturn(usuarioFake);
+        BDDMockito.given(service.save(Mockito.any(User.class)))
+                .willReturn(userFake);
 
         String json = new ObjectMapper().writeValueAsString(dto);
 
         //Execucao
         //Simulando o envio pro controller.
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .post(USUARIO_API)
+                .post(USER_API)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(json);
@@ -71,26 +75,26 @@ public class UsuarioControllerTests {
                 .perform(request)
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("id").isNotEmpty())
-                     .andExpect(jsonPath("id").value(usuarioFake.getId()))
-                .andExpect(jsonPath("nome").value(dto.getNome()))
+                     .andExpect(jsonPath("id").value(userFake.getId()))
+                .andExpect(jsonPath("name").value(dto.getName()))
                 .andExpect(jsonPath("email").value(dto.getEmail()))
-                .andExpect(jsonPath("telefone").value(dto.getTelefone()))
-                .andExpect(jsonPath("dataNascimento").value(dataFormatada));
+                .andExpect(jsonPath("phone").value(dto.getPhone()))
+                .andExpect(jsonPath("birthDate").value(dataFormatada));
     }
 
 
 
     @Test
     @DisplayName("Deve lancar erro de validacao quando nao houver dados suficiente para criacao de usuario.")
-    public void criarUsuarioNaoValidoTest() throws Exception{
+    public void createUserNotValidTest() throws Exception{
 
         //Cenario
-        String json = new ObjectMapper().writeValueAsString(new UsuarioDto());
+        String json = new ObjectMapper().writeValueAsString(new UserDto());
 
         //Excecucao
         //Simulando o envio pro controller.
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .post(USUARIO_API)
+                .post(USER_API)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(json);
@@ -103,20 +107,20 @@ public class UsuarioControllerTests {
 
     @Test
     @DisplayName("Deve lancar erro de validacao ao tentar criar usuario com o email duplicado.")
-    public void criarUsuarioTelefoneDuplicadoTest() throws Exception{
+    public void createUserPhoneDuplicateTest() throws Exception{
         //Cenario
-        UsuarioDto dto = getUsuarioDto();
+        UserDto dto = getUsuarioDto();
         String json = new ObjectMapper().writeValueAsString(dto);
 
         //Simulando a resposta ao criar o usuario.
         String mensagemError = "Email ja cadastrado.";
-        BDDMockito.given(usuarioService.save(Mockito.any(Usuario.class)))
+        BDDMockito.given(service.save(Mockito.any(User.class)))
                 .willThrow(new BusinessException(mensagemError));
 
         //Execucao
         //Simulando o envio pro controller.
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .post(USUARIO_API)
+                .post(USER_API)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(json);
@@ -132,22 +136,22 @@ public class UsuarioControllerTests {
     @DisplayName("Deve obter o usuario.")
     public void obterUsuarioTest() throws Exception{
         //Cenario
-        long idUsuario = 1l;
+        long idUser = 1l;
 
         //Simulando o envio do controller
-        Usuario usuario = Usuario.builder()
-                        .id(idUsuario)
-                        .nome(getUsuarioDto().getNome())
+        User user = User.builder()
+                        .id(idUser)
+                        .name(getUsuarioDto().getName())
                         .email(getUsuarioDto().getEmail())
-                        .telefone(getUsuarioDto().getTelefone())
-                        .dataNascimento(getUsuarioDto().getDataNascimento())
+                        .phone(getUsuarioDto().getPhone())
+                        .birthDate(getUsuarioDto().getBirthDate())
                         .build();
-        String dataFormatada = DataHora.dataFormatada(usuario.getDataNascimento(),"yyyy-MM-dd");
-        BDDMockito.given(usuarioService.getById(idUsuario)).willReturn(Optional.of(usuario));
+        String formattedDate = DateTime.formattedDate(user.getBirthDate(),"yyyy-MM-dd");
+        BDDMockito.given(service.getById(idUser)).willReturn(Optional.of(user));
 
         //Execucao
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .get(USUARIO_API.concat("/") + idUsuario)
+                .get(USER_API.concat("/") + idUser)
                 .accept(MediaType.APPLICATION_JSON);
 
 
@@ -155,22 +159,22 @@ public class UsuarioControllerTests {
         mvc.perform(request)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").isNotEmpty())
-                .andExpect(jsonPath("id").value(idUsuario))
-                .andExpect(jsonPath("nome").value(usuario.getNome()))
-                .andExpect(jsonPath("email").value(usuario.getEmail()))
-                .andExpect(jsonPath("telefone").value(usuario.getTelefone()))
-                .andExpect(jsonPath("dataNascimento").value(dataFormatada));
+                .andExpect(jsonPath("id").value(idUser))
+                .andExpect(jsonPath("name").value(user.getName()))
+                .andExpect(jsonPath("email").value(user.getEmail()))
+                .andExpect(jsonPath("phone").value(user.getPhone()))
+                .andExpect(jsonPath("birthDate").value(formattedDate));
     }
 
     @Test
     @DisplayName("Deve retornar not found.")
-    public void notFountUsuarioTest() throws Exception{
+    public void notFountUserTest() throws Exception{
         //Cenario
-        BDDMockito.given(usuarioService.getById(Mockito.anyLong())).willReturn(Optional.empty());
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.empty());
 
         //Execucao
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .get(USUARIO_API.concat("/") + 1l)
+                .get(USER_API.concat("/") + 1l)
                 .accept(MediaType.APPLICATION_JSON);
 
         //Verificacao
@@ -180,15 +184,15 @@ public class UsuarioControllerTests {
 
     @Test
     @DisplayName("Deve deletar usuario.")
-    public void deletarUsuario() throws Exception{
+    public void deleteUser() throws Exception{
         //Cenario
-        Long idUsuario = 1l;
+        Long idUser = 1l;
         //Simulando retorno.
-        BDDMockito.given(usuarioService.getById(Mockito.anyLong())).willReturn(Optional.of(Usuario.builder().id(idUsuario).build()));
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.of(User.builder().id(idUser).build()));
 
         //Execucao
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .delete(USUARIO_API.concat("/") + 1l);
+                .delete(USER_API.concat("/") + 1l);
 
         //Verificacao
         mvc.perform(request)
@@ -197,14 +201,14 @@ public class UsuarioControllerTests {
 
     @Test
     @DisplayName("Deve retornar not found ao deletar usuario nao encontrado.")
-    public void deletarUsuarioInexistente() throws Exception{
+    public void deleteUserNotFound() throws Exception{
         //Cenario
         //Simulando retorno.
-        BDDMockito.given(usuarioService.getById(Mockito.anyLong())).willReturn(Optional.empty());
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.empty());
 
         //Execucao
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .delete(USUARIO_API.concat("/") + 1l);
+                .delete(USER_API.concat("/") + 1l);
 
         //Verificacao
         mvc.perform(request)
@@ -213,29 +217,29 @@ public class UsuarioControllerTests {
 
     @Test
     @DisplayName("Deve atualizar o usuario")
-    public void atualizarUsuario() throws Exception{
+    public void updateUser() throws Exception{
         //Cenario
-        Long idUsuario = 1l;
-        Usuario usuarioFake = Usuario.builder()
-                .id(idUsuario)
-                .nome(getUsuarioDto().getNome())
+        Long idUser = 1l;
+        User userFake = User.builder()
+                .id(idUser)
+                .name(getUsuarioDto().getName())
                 .email(getUsuarioDto().getEmail())
-                .telefone(getUsuarioDto().getTelefone())
-                .dataNascimento(getUsuarioDto().getDataNascimento())
+                .phone(getUsuarioDto().getPhone())
+                .birthDate(getUsuarioDto().getBirthDate())
                 .build();
-        String dataFormatada = DataHora.dataFormatada(usuarioFake.getDataNascimento(),"yyyy-MM-dd");
+        String formattedDate = DateTime.formattedDate(userFake.getBirthDate(),"yyyy-MM-dd");
 
         //Simulando retorno.
-        BDDMockito.given(usuarioService.getById(idUsuario)).willReturn(Optional.of(usuarioFake));
-        BDDMockito.given(usuarioService.update(Mockito.any(Usuario.class)))
-                .willReturn(usuarioFake);
+        BDDMockito.given(service.getById(idUser)).willReturn(Optional.of(userFake));
+        BDDMockito.given(service.update(Mockito.any(User.class)))
+                .willReturn(userFake);
 
         String json = new ObjectMapper().writeValueAsString(getUsuarioDto());
 
         //Execucao
         //Simulando o envio pro controller.
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .put(USUARIO_API.concat("/") + idUsuario)
+                .put(USER_API.concat("/") + idUser)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(json);
@@ -243,28 +247,27 @@ public class UsuarioControllerTests {
         mvc.perform(request)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").isNotEmpty())
-                .andExpect(jsonPath("id").isNotEmpty())
-                .andExpect(jsonPath("id").value(idUsuario))
-                .andExpect(jsonPath("nome").value(usuarioFake.getNome()))
-                .andExpect(jsonPath("email").value(usuarioFake.getEmail()))
-                .andExpect(jsonPath("telefone").value(usuarioFake.getTelefone()))
-                .andExpect(jsonPath("dataNascimento").value(dataFormatada));
+                .andExpect(jsonPath("id").value(idUser))
+                .andExpect(jsonPath("name").value(userFake.getName()))
+                .andExpect(jsonPath("email").value(userFake.getEmail()))
+                .andExpect(jsonPath("phone").value(userFake.getPhone()))
+                .andExpect(jsonPath("birthDate").value(formattedDate));
     }
 
     @Test
     @DisplayName("Deve lanacar not found caso nao encontre o  usuario para atualizar.")
-    public void atualizarUsuarioInexistente() throws Exception{
+    public void updateUserNotFound() throws Exception{
         //Cenario
-        Long idUsuario = 1l;
+        Long idUser = 1l;
         //Simulando retorno.
-        BDDMockito.given(usuarioService.getById(Mockito.anyLong())).willReturn(Optional.empty());
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.empty());
 
         String json = new ObjectMapper().writeValueAsString(getUsuarioDto());
 
         //Execucao
         //Simulando o envio pro controller.
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .put(USUARIO_API.concat("/") + idUsuario)
+                .put(USER_API.concat("/") + idUser)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(json);
@@ -273,8 +276,39 @@ public class UsuarioControllerTests {
                 .andExpect(status().isNotFound());
     }
 
-    public UsuarioDto getUsuarioDto() {
-        return UsuarioDto.builder().nome("Fulano").telefone("558500000000")
-                .email("fulano@gmail.com").dataNascimento(DataHora.criar(30,3,1987)).build();
+    @Test
+    @DisplayName("Deve retornar uma lista de usuarios paginado.")
+    public void listUserPaginatedTest() throws Exception{
+        //cenario
+        User user = User.builder()
+                            .id(1l)
+                            .name(getUsuarioDto().getName())
+                            .email(getUsuarioDto().getEmail())
+                            .phone(getUsuarioDto().getPhone())
+                            .birthDate(getUsuarioDto().getBirthDate())
+                            .build();
+
+        BDDMockito.given( service.find(Mockito.any(User.class), Mockito.any(Pageable.class)))
+                .willReturn(new PageImpl<User>(Arrays.asList(user), PageRequest.of(0, 100), 1));
+
+        String queryString = String.format("?nome=%s&page=0&size=100", user.getName());
+
+        //execucao
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(USER_API.concat(queryString))
+                .accept(MediaType.APPLICATION_JSON);
+
+        //verificacao
+        mvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("content", Matchers.hasSize(1)))
+                .andExpect(jsonPath("totalElements").value(1))
+                .andExpect(jsonPath("pageable.pageSize").value(100))
+                .andExpect(jsonPath("pageable.pageNumber").value( 0));
+    }
+
+    public UserDto getUsuarioDto() {
+        return UserDto.builder().name("Fulano").phone("558500000000")
+                .email("fulano@gmail.com").birthDate(DateTime.create(30,3,1987)).build();
     }
 }

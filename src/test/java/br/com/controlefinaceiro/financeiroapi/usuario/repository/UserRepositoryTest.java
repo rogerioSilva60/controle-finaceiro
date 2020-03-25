@@ -1,7 +1,7 @@
 package br.com.controlefinaceiro.financeiroapi.usuario.repository;
 
-import br.com.controlefinaceiro.financeiroapi.usuario.entity.Usuario;
-import br.com.controlefinaceiro.financeiroapi.utils.DataHora;
+import br.com.controlefinaceiro.financeiroapi.usuario.entity.User;
+import br.com.controlefinaceiro.financeiroapi.utils.DateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,22 +18,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 @DataJpaTest
-public class UsuarioRepositoryTest {
+public class UserRepositoryTest {
 
     @Autowired
     TestEntityManager entityManager;
 
     @Autowired
-    UsuarioRepository repository;
+    UserRepository repository;
 
     @Test
     @DisplayName("Deve retornar verdadeiro quando existir usuario na base com email informado.")
-    public void retorneVerdadeiroCasoExistaTest(){
+    public void returnTrueIfAnyTest(){
 
         //cenario
         String email = "fulano@gmail.com";
-        Usuario usuario = getUsuario();
-        entityManager.persist(usuario);
+        User user = getUser();
+        entityManager.persist(user);
 
         //excucao
         boolean existe = repository.existsByEmail(email);
@@ -44,7 +44,7 @@ public class UsuarioRepositoryTest {
 
     @Test
     @DisplayName("Deve retornar falso quando existir usuario na base com email informado.")
-    public void retorneFalsoCasoExistaTest(){
+    public void returnFalseIfAnyTest(){
 
         //cenario
         String email = "fulano@gmail.com";
@@ -58,49 +58,49 @@ public class UsuarioRepositoryTest {
 
     @Test
     @DisplayName("Deve buscar usuario por id.")
-    public void buscarUsuarioTest(){
+    public void getUserTest(){
         //cenario
-        Usuario usuario = getUsuario();
-        entityManager.persist(usuario);
+        User user = getUser();
+        entityManager.persist(user);
 
         //execucao
-        Optional<Usuario> usuarioOptional = repository.findById(usuario.getId());
+        Optional<User> userOptional = repository.findById(user.getId());
 
         //verificacao
-        assertThat(usuarioOptional.isPresent()).isTrue();
+        assertThat(userOptional.isPresent()).isTrue();
     }
 
     @Test
     @DisplayName("Deve salvar usuario.")
-    public void salvarUsuarioTest(){
+    public void saveUserTest(){
         //cenario
-        Usuario usuario = getUsuario();
+        User user = getUser();
 
         //execucao
-        Usuario usuarioSalvo = repository.save(usuario);
+        User userSalvo = repository.save(user);
 
         //Verificacao
-        assertThat(usuarioSalvo.getId()).isNotNull();
+        assertThat(userSalvo.getId()).isNotNull();
     }
 
     @Test
     @DisplayName("Deve deletar um usuario.")
-    public void deletUsuarioTest(){
+    public void deleteUserTest(){
         //cenario
-        Usuario usuarioASalvar = getUsuario();
-        entityManager.persist(usuarioASalvar);
-        Usuario usuario = entityManager.find(Usuario.class, usuarioASalvar.getId());
+        User userSaving = getUser();
+        entityManager.persist(userSaving);
+        User userSaved = entityManager.find(User.class, userSaving.getId());
 
         //execucao
-        repository.delete(usuario);
-        Usuario usuarioDeletado = entityManager.find(Usuario.class, usuarioASalvar.getId());
+        repository.delete(userSaved);
+        User userDeleted = entityManager.find(User.class, userSaving.getId());
 
         //verificacao
-        assertThat(usuarioDeletado).isNull();
+        assertThat(userDeleted).isNull();
     }
 
-    private Usuario getUsuario() {
-        return Usuario.builder().nome("Fulano").telefone("5585000000")
-                .email("fulano@gmail.com").dataNascimento(DataHora.criar(30,3,1987)).build();
+    private User getUser() {
+        return User.builder().name("Fulano").phone("5585000000")
+                .email("fulano@gmail.com").birthDate(DateTime.create(30,3,1987)).build();
     }
 }

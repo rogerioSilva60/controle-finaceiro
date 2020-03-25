@@ -4,9 +4,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-public abstract class DataHora {
+public abstract class DateTime {
 
-    public static String dataFormatada(int dia, int mes, int ano, String format) {
+    public static String formattedDate(int dia, int mes, int ano, String format) {
         if(mes >=1 &&  mes <= 12){
             mes -= 1;
             SimpleDateFormat sdf = new SimpleDateFormat(format);
@@ -19,7 +19,7 @@ public abstract class DataHora {
         return null;
     }
 
-    public static String dataFormatada(Date data, String format) {
+    public static String formattedDate(Date data, String format) {
         SimpleDateFormat sdf = new SimpleDateFormat(format);
         Calendar c = Calendar.getInstance();
         c.setTime(data);
@@ -27,7 +27,7 @@ public abstract class DataHora {
         return dataFormatada;
     }
 
-    public static Date criar(int dia, int mes, int ano) {
+    public static Date create(int dia, int mes, int ano) {
         if(mes >=1 &&  mes <= 12){
             mes -= 1;
             Calendar c = Calendar.getInstance();

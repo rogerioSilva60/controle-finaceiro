@@ -7,16 +7,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ApiErros {
+public class ApiErrors {
 
     public List<String> errors;
 
-    public ApiErros(BindingResult bindingResult) {
+    public ApiErrors(BindingResult bindingResult) {
       this.errors = new ArrayList<String>();
       bindingResult.getAllErrors().forEach(error -> this.errors.add(error.getDefaultMessage()));
     }
 
-    public ApiErros(BusinessException ex) {
+    public ApiErrors(BusinessException ex) {
         this.errors = Arrays.asList(ex.getMessage());
     }
 
