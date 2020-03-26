@@ -61,6 +61,7 @@ public class UserControllerTest {
                 .willReturn(userFake);
 
         String json = new ObjectMapper().writeValueAsString(dto);
+        System.out.println(json);
 
         //Execucao
         //Simulando o envio pro controller.

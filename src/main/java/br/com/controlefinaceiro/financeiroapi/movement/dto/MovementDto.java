@@ -1,8 +1,7 @@
 package br.com.controlefinaceiro.financeiroapi.movement.dto;
 
 import br.com.controlefinaceiro.financeiroapi.user.dto.UserDto;
-import br.com.controlefinaceiro.financeiroapi.user.entity.User;
-import br.com.controlefinaceiro.financeiroapi.utils.constant.CashFlow;
+import br.com.controlefinaceiro.financeiroapi.utils.constant.TypeCashFlow;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,6 +38,7 @@ public class MovementDto {
     @NotNull(message = "Usuário obrigatório.")
     private UserDto user;
 
-    @NotNull(message = "Fluxo de caixa e obrigatorio. Os valores permitidos sao RECEITA e DESPESA.")
-    private CashFlow cashFlow;
+    @NotNull(message = "Fluxo de caixa e obrigatorio. Os valores permitidos para 'typeCashFlow' sao Receita ou Despesa.")
+    private TypeCashFlow typeCashFlow;
+
 }

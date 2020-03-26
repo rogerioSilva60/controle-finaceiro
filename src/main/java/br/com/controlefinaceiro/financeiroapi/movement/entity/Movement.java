@@ -1,7 +1,7 @@
 package br.com.controlefinaceiro.financeiroapi.movement.entity;
 
 import br.com.controlefinaceiro.financeiroapi.user.entity.User;
-import br.com.controlefinaceiro.financeiroapi.utils.constant.CashFlow;
+import br.com.controlefinaceiro.financeiroapi.utils.constant.TypeCashFlow;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -47,8 +47,8 @@ public class Movement {
     @JoinColumn(name = "id_user")
     private User user;
 
-    @NotNull(message = "Fluxo de caixa e obrigatorio. Os valores permitidos sao RECEITA e DESPESA.")
+    @NotNull(message = "Fluxo de caixa e obrigatorio. Os valores permitidos para 'typeCashFlow' sao Receita ou Despesa.")
     @Enumerated(EnumType.STRING)
-	@Column(name = "cash_flow")
-    private CashFlow cashFlow;
+	@Column(name = "type_cash_flow")
+    private TypeCashFlow typeCashFlow;
 }

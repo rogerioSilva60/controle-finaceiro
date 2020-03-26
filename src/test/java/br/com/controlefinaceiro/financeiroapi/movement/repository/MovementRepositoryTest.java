@@ -4,7 +4,7 @@ import br.com.controlefinaceiro.financeiroapi.movement.entity.Movement;
 import br.com.controlefinaceiro.financeiroapi.user.entity.User;
 import br.com.controlefinaceiro.financeiroapi.user.repository.UserRepository;
 import br.com.controlefinaceiro.financeiroapi.utils.DateTime;
-import br.com.controlefinaceiro.financeiroapi.utils.constant.CashFlow;
+import br.com.controlefinaceiro.financeiroapi.utils.constant.TypeCashFlow;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +33,7 @@ public class MovementRepositoryTest {
     UserRepository userRepository;
 
     @Test
-    @DisplayName("Deve salvar usuario.")
+    @DisplayName("Deve salvar uma movimentacao.")
     public void saveMovementTest(){
         //cenario
         Movement movement = getMovement();
@@ -47,7 +47,7 @@ public class MovementRepositoryTest {
         //Verificacao
         assertThat(userSaved.getId()).isNotNull();
         assertThat(movementSaved.getId()).isNotNull();
-        assertThat(movementSaved.getCashFlow()).isEqualTo(CashFlow.EXPENCE);
+        assertThat(movementSaved.getTypeCashFlow()).isEqualTo(TypeCashFlow.EXPENCE);
     }
 
     private Movement getMovement() {
@@ -57,7 +57,7 @@ public class MovementRepositoryTest {
                 .dueDate(DateTime.create(26,03,2020))
                 .payDay(DateTime.create(26,03,2020))
                 .user(getUsuario())
-                .cashFlow(CashFlow.fromValue("DESPESA"))
+                .typeCashFlow(TypeCashFlow.fromValue("DESPESA"))
                 .build();
     }
 

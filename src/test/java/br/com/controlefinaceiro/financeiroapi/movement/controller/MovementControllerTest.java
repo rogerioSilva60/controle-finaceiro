@@ -6,7 +6,7 @@ import br.com.controlefinaceiro.financeiroapi.movement.service.MovementService;
 import br.com.controlefinaceiro.financeiroapi.user.dto.UserDto;
 import br.com.controlefinaceiro.financeiroapi.user.entity.User;
 import br.com.controlefinaceiro.financeiroapi.utils.DateTime;
-import br.com.controlefinaceiro.financeiroapi.utils.constant.CashFlow;
+import br.com.controlefinaceiro.financeiroapi.utils.constant.TypeCashFlow;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
@@ -57,13 +57,13 @@ public class MovementControllerTest {
         Movement movementFake = Movement.builder().id(1l).description(dto.getDescription()).value(dto.getValue())
                 .dueDate(dto.getDueDate()).payDay(dto.getPayDay())
                 .user(User.builder().id(idUser).name(getUsuarioDto().getName()).email(getUsuarioDto().getEmail())
-                .birthDate(getUsuarioDto().getBirthDate()).build()).cashFlow(CashFlow.EXPENCE).build();
+                .birthDate(getUsuarioDto().getBirthDate()).build()).typeCashFlow(TypeCashFlow.EXPENCE).build();
 
         //Simulando a resposta ao criar o movimentacao.
         BDDMockito.given(service.save(Mockito.any(Movement.class)))
                 .willReturn(movementFake);
         String json = new ObjectMapper().writeValueAsString(dto);
-
+        System.out.println(json);
         //execucao
         //Simulando o envio pro controller.
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
@@ -87,10 +87,10 @@ public class MovementControllerTest {
     }
 
     @Test
-    @DisplayName("Deve lancar erro de validacao quando nao houver dados suficiente para criacao de usuario.")
+    @DisplayName("Deve lancar erro de validacao quando nao houver dados suficiente para criacao de movimentacao financeira.")
     public void createMovementNotValidTest() throws Exception{
         //Cenario
-        String json = new ObjectMapper().writeValueAsString(new UserDto());
+        String json = new ObjectMapper().writeValueAsString(new MovementDto());
 
         //Excecucao
         //Simulando o envio pro controller.
@@ -106,6 +106,30 @@ public class MovementControllerTest {
                 .andExpect(jsonPath("message.errors", Matchers.hasSize(6)));
     }
 
+    @Test
+    @DisplayName("Deve lancar erro de validacao quando o fluxo de caixa nao for os respectivos existentes para criacao de usuario.")
+    public void createMovimententNotCashFlowInvalidTest() throws Exception {
+        //cenario
+        MovementDto dto = getMovementDto();
+        dto.setTypeCashFlow(null);
+
+        String json = new ObjectMapper().writeValueAsString(dto);
+        //execucao
+        //Simulando o envio pro controller.
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .post(MOVEMENT_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        //verificacao
+        mvc
+                .perform(request)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("message.errors", Matchers.hasSize(1)));
+    }
+
+
     private MovementDto getMovementDto() {
         return MovementDto.builder()
                 .description("Energia")
@@ -113,7 +137,7 @@ public class MovementControllerTest {
                 .dueDate(DateTime.create(26,03,2020))
                 .payDay(DateTime.create(26,03,2020))
                 .user(getUsuarioDto())
-                .cashFlow(CashFlow.fromValue("DESPESA"))
+                .typeCashFlow(TypeCashFlow.fromValue("DESPESA"))
                 .build();
     }
 

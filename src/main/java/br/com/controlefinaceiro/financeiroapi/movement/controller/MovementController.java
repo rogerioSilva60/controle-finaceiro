@@ -29,4 +29,5 @@ public class MovementController {
         movement = service.save(movement);
         return modelMapper.map(movement, MovementDto.class);
     }
+
 }
