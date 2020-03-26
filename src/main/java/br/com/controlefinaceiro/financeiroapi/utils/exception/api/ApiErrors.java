@@ -1,13 +1,10 @@
 package br.com.controlefinaceiro.financeiroapi.utils.exception.api;
 
 import br.com.controlefinaceiro.financeiroapi.utils.exception.BusinessException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
-import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
