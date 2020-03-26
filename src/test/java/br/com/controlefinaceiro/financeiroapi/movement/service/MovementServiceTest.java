@@ -4,6 +4,9 @@ import br.com.controlefinaceiro.financeiroapi.movement.entity.Movement;
 import br.com.controlefinaceiro.financeiroapi.movement.repository.MovementRepository;
 import br.com.controlefinaceiro.financeiroapi.movement.service.impl.MovementServiceImpl;
 import br.com.controlefinaceiro.financeiroapi.user.entity.User;
+import br.com.controlefinaceiro.financeiroapi.user.repository.UserRepository;
+import br.com.controlefinaceiro.financeiroapi.user.service.UserService;
+import br.com.controlefinaceiro.financeiroapi.user.service.impl.UserServiceImpl;
 import br.com.controlefinaceiro.financeiroapi.utils.DateTime;
 import br.com.controlefinaceiro.financeiroapi.utils.constant.TypeCashFlow;
 import br.com.controlefinaceiro.financeiroapi.utils.exception.BusinessException;
@@ -18,6 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,14 +30,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class MovementServiceTest {
 
     MovementService service;
-
+    UserService userService;
     @MockBean
     MovementRepository repository;
+    @MockBean
+    UserRepository userRepository;
 
     //Executa antes de cada metodo de teste
     @BeforeEach
     public void setUp(){
-        this.service = new MovementServiceImpl(repository);
+        this.userService = new UserServiceImpl(userRepository);
+        this.service = new MovementServiceImpl(repository, userService);
+
     }
 
     @Test
@@ -41,11 +49,14 @@ public class MovementServiceTest {
     public void saveMovementTest() throws Exception{
         //cenario
         Movement movement = getMovement();
-        Mockito.when(repository.existsById(Mockito.anyLong())).thenReturn(false);
+
         //Simula um objeto criado no banco de dados.
         User user = movement.getUser();
         user.setId(1l);
         TypeCashFlow cashFlow = TypeCashFlow.fromValue("DESPESA");
+        Mockito.when(repository.existsById(Mockito.anyLong())).thenReturn(false);
+        Mockito.when(userService.save(getUsuario())).thenReturn(user);
+        Mockito.when(userService.getById(Mockito.anyLong())).thenReturn(Optional.of(user));
         Mockito.when(repository.save(movement)).thenReturn(
                 Movement.builder().id(1l)
                         .description(movement.getDescription())

@@ -27,7 +27,7 @@ public class FinanceiroApiApplication {
 	}
 
 	@GetMapping("/")
-	public String get200() {
+	public String getInitial() {
 		return "Server working";
 	}
 }
