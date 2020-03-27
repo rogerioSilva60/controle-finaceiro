@@ -19,4 +19,5 @@ public interface UserService {
 
     Page<User> find(User user, Pageable pageable);
 
+    User find(Long idUser);
 }

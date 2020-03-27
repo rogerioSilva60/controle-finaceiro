@@ -18,6 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -26,6 +30,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Date;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -129,6 +135,58 @@ public class MovementControllerTest {
                 .andExpect(jsonPath("message.errors", Matchers.hasSize(1)));
     }
 
+
+    @Test
+    @DisplayName("Deve obter a movimentacao por periodo de vencimento e id do usuario paginado.")
+    public void getMovementByIdUserAndDueDateInitialAndDueDateEndPagedTest() throws Exception{
+        //cenario
+        Long idUser = 1l;
+        MovementDto dto = getMovementDto();
+        dto.getUser().setId(idUser);
+
+        Date dueDateInitial = DateTime.create(1,3,2020);
+        Date dueDateEnd = DateTime.createDateLast(27,3,2020);
+        String dueDateInitialFormated = DateTime.formattedDate(dueDateInitial, "yyyy-MM-dd");
+        String dueDateEndFormated = DateTime.formattedDate(dueDateEnd, "yyyy-MM-dd");
+
+        User user = User.builder()
+                .id(idUser)
+                .name(getUsuarioDto().getName())
+                .email(getUsuarioDto().getEmail())
+                .birthDate(getUsuarioDto().getBirthDate())
+                .build();
+        Movement movementFake = Movement.builder()
+                .id(1l).description(dto.getDescription())
+                .value(dto.getValue())
+                .dueDate(dto.getDueDate())
+                .payDay(dto.getPayDay())
+                .user(user)
+                .typeCashFlow(TypeCashFlow.EXPENCE)
+                .build();
+        Pageable pageable = PageRequest.of(0, 10, Sort.Direction.DESC, "dueDate");
+
+        //Simulando a resposta da movimentacao papginada.
+        BDDMockito.given(service.findByExpirationDate(Mockito.anyLong(), Mockito.any(Date.class),
+                Mockito.any(Date.class), Mockito.any(Pageable.class)))
+                .willReturn(new PageImpl<Movement>(Arrays.asList(movementFake), pageable, 1));
+
+        String queryString = String.format("?idUser=%s&dueDateInitial=%s&dueDateEnd=%s&page=0&size=10",
+                idUser, dueDateInitialFormated, dueDateEndFormated);
+
+        //execucao
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(MOVEMENT_API.concat(queryString))
+                .accept(MediaType.APPLICATION_JSON);
+
+        //verificacao
+        mvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("data").isNotEmpty())
+                .andExpect(jsonPath("data.content", Matchers.hasSize(1)))
+                .andExpect(jsonPath("data.totalElements").value(1))
+                .andExpect(jsonPath("data.pageable.pageSize").value(10))
+                .andExpect(jsonPath("data.pageable.pageNumber").value( 0));
+    }
 
     private MovementDto getMovementDto() {
         return MovementDto.builder()

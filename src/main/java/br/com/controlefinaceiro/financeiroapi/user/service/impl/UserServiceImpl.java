@@ -62,4 +62,9 @@ public class UserServiceImpl implements UserService {
         return repository.findAll(example, pageable);
     }
 
+    @Override
+    public User find(Long idUser) {
+        return null;
+    }
+
 }

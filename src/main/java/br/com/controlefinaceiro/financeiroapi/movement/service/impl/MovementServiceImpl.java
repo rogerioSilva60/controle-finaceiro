@@ -5,7 +5,11 @@ import br.com.controlefinaceiro.financeiroapi.movement.repository.MovementReposi
 import br.com.controlefinaceiro.financeiroapi.movement.service.MovementService;
 import br.com.controlefinaceiro.financeiroapi.user.service.UserService;
 import br.com.controlefinaceiro.financeiroapi.utils.exception.BusinessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Service
 public class MovementServiceImpl implements MovementService {
@@ -23,6 +27,13 @@ public class MovementServiceImpl implements MovementService {
     public Movement save(Movement movement) {
         prepareMovementToSave(movement);
         return repository.save(movement);
+    }
+
+    @Override
+    public Page<Movement> findByExpirationDate(long idUser, Date dueDateInitial, Date dueDateEnd, Pageable pageable) {
+
+        Page<Movement> result = repository.findByExpirationDate(idUser, dueDateInitial, dueDateEnd, pageable);
+        return result;
     }
 
     private void prepareMovementToSave(Movement movement) {

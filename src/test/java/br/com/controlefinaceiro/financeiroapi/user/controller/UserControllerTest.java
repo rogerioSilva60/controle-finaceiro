@@ -106,7 +106,7 @@ public class UserControllerTest {
 
     @Test
     @DisplayName("Deve lancar erro de validacao ao tentar criar usuario com o email duplicado.")
-    public void createUserPhoneDuplicateTest() throws Exception{
+    public void createUserEmailDuplicateTest() throws Exception{
         //Cenario
         UserDto dto = getUsuarioDto();
         String json = new ObjectMapper().writeValueAsString(dto);
