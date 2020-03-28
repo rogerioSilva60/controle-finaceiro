@@ -101,7 +101,7 @@ public class UserControllerTest {
         //Verificacao
         mvc.perform(request)
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("message.errors", Matchers.hasSize(3)));
+                .andExpect(jsonPath("errors", Matchers.hasSize(3)));
     }
 
     @Test
@@ -127,8 +127,8 @@ public class UserControllerTest {
         //Verificacao
         mvc.perform(request)
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("message.errors", Matchers.hasSize(1)))
-                .andExpect(jsonPath("message.errors[0]").value(mensagemError));
+                .andExpect(jsonPath("errors", Matchers.hasSize(1)))
+                .andExpect(jsonPath("errors[0]").value(mensagemError));
     }
 
     @Test
@@ -243,6 +243,7 @@ public class UserControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .content(json);
 
+        //verificacao
         mvc.perform(request)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").isNotEmpty())
@@ -254,7 +255,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @DisplayName("Deve lanacar not found caso nao encontre o  usuario para atualizar.")
+    @DisplayName("Deve lancar not found caso nao encontre o  usuario para atualizar.")
     public void updateUserNotFound() throws Exception{
         //Cenario
         Long idUser = 1l;

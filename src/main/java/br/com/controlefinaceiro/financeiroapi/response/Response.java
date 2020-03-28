@@ -9,7 +9,7 @@ import java.util.List;
 public class Response<T>{
 
     private T data;
-    private List<String> erros = new ArrayList<>();
+    private List<String> errors = new ArrayList<>();
 
     public Response() {
 

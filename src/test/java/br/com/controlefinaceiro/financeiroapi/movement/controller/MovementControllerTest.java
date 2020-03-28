@@ -32,6 +32,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Optional;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -82,14 +83,15 @@ public class MovementControllerTest {
         mvc
                 .perform(request)
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("id").isNotEmpty())
-                .andExpect(jsonPath("id").value(movementFake.getId()))
-                .andExpect(jsonPath("description").value(dto.getDescription()))
-                .andExpect(jsonPath("value").value(dto.getValue()))
-                .andExpect(jsonPath("dueDate").value(dueDateformatted))
-                .andExpect(jsonPath("payDay").value(payDayformatted))
-                .andExpect(jsonPath("user.id").isNotEmpty())
-                .andExpect(jsonPath("user.id").value(movementFake.getUser().getId()));
+                .andExpect(jsonPath("data").isNotEmpty())
+                .andExpect(jsonPath("data.id").isNotEmpty())
+                .andExpect(jsonPath("data.id").value(movementFake.getId()))
+                .andExpect(jsonPath("data.description").value(dto.getDescription()))
+                .andExpect(jsonPath("data.value").value(dto.getValue()))
+                .andExpect(jsonPath("data.dueDate").value(dueDateformatted))
+                .andExpect(jsonPath("data.payDay").value(payDayformatted))
+                .andExpect(jsonPath("data.user.id").isNotEmpty())
+                .andExpect(jsonPath("data.user.id").value(movementFake.getUser().getId()));
     }
 
     @Test
@@ -109,7 +111,7 @@ public class MovementControllerTest {
         //Verificacao
         mvc.perform(request)
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("message.errors", Matchers.hasSize(6)));
+                .andExpect(jsonPath("errors", Matchers.hasSize(6)));
     }
 
     @Test
@@ -132,7 +134,7 @@ public class MovementControllerTest {
         mvc
                 .perform(request)
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("message.errors", Matchers.hasSize(1)));
+                .andExpect(jsonPath("errors", Matchers.hasSize(1)));
     }
 
 
@@ -186,6 +188,104 @@ public class MovementControllerTest {
                 .andExpect(jsonPath("data.totalElements").value(1))
                 .andExpect(jsonPath("data.pageable.pageSize").value(10))
                 .andExpect(jsonPath("data.pageable.pageNumber").value( 0));
+    }
+
+    @Test
+    @DisplayName("Deve atualizar a movimentacao")
+    public void updateMovement() throws Exception{
+        //cenario
+        Long idUser = 1l;
+        Long idMovement = 1l;
+        MovementDto dto = getMovementDto();
+        dto.getUser().setId(idUser);
+        User user = User.builder()
+                .id(idUser)
+                .name(getUsuarioDto().getName())
+                .email(getUsuarioDto().getEmail())
+                .birthDate(getUsuarioDto().getBirthDate())
+                .build();
+        Movement movementFake = Movement.builder()
+                .id(idMovement).description(dto.getDescription())
+                .value(dto.getValue())
+                .dueDate(dto.getDueDate())
+                .payDay(dto.getPayDay())
+                .user(user)
+                .typeCashFlow(TypeCashFlow.EXPENCE)
+                .build();
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.of(movementFake));
+        BDDMockito.given(service.update(Mockito.any(Movement.class)))
+                .willReturn(movementFake);
+
+        String json = new ObjectMapper().writeValueAsString(dto);
+
+        //execucao
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put(MOVEMENT_API.concat("/") + idMovement)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        //verificacao
+        mvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("data.id").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("Deve lancar not found caso nao encontre a movimentacao para atualizar.")
+    public void updateMovementNotFound() throws Exception{
+        //cenario
+        Long idUser = 1l;
+        Long idMovement = 1l;
+        MovementDto dto = getMovementDto();
+        dto.getUser().setId(idUser);
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.empty());
+
+        String json = new ObjectMapper().writeValueAsString(dto);
+
+        //execucao
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put(MOVEMENT_API.concat("/") + idMovement)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        //verificacao
+        mvc.perform(request)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Deve deletar uma movimentacao")
+    public void deleteMovement() throws Exception{
+        //Cenario
+        Long idMovement = 1l;
+        //Simulando retorno.
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.of(Movement.builder().id(idMovement).build()));
+
+        //Execucao
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete(MOVEMENT_API.concat("/") + idMovement);
+
+        //Verificacao
+        mvc.perform(request)
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("Deve retornar not found ao deletar uma movimentacao nao encontrada.")
+    public void deleteNotFoundMovement() throws Exception{
+        //Cenario
+        //Simulando retorno.
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.empty());
+
+        //Execucao
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete(MOVEMENT_API.concat("/") + 1l);
+
+        //Verificacao
+        mvc.perform(request)
+                .andExpect(status().isNotFound());
     }
 
     private MovementDto getMovementDto() {

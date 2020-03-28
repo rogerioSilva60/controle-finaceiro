@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class MovementServiceImpl implements MovementService {
@@ -34,6 +35,22 @@ public class MovementServiceImpl implements MovementService {
 
         Page<Movement> result = repository.findByExpirationDate(idUser, dueDateInitial, dueDateEnd, pageable);
         return result;
+    }
+
+    @Override
+    public Movement update(Movement movement) {
+
+        return null;
+    }
+
+    @Override
+    public Optional<Movement> getById(long id) {
+        return null;
+    }
+
+    @Override
+    public void delete(Movement movement) {
+
     }
 
     private void prepareMovementToSave(Movement movement) {

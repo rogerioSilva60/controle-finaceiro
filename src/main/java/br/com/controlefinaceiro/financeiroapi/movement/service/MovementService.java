@@ -5,10 +5,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Date;
+import java.util.Optional;
 
 public interface MovementService {
 
     Movement save(Movement movement);
 
     Page<Movement> findByExpirationDate(long idUser, Date dueDateInitial, Date dueDateEnd, Pageable pageable);
+
+    Movement update(Movement movement);
+
+    Optional<Movement> getById(long id);
+
+    void delete(Movement movement);
 }

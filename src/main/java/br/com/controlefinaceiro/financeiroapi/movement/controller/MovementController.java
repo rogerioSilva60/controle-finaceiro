@@ -4,12 +4,14 @@ import br.com.controlefinaceiro.financeiroapi.movement.dto.MovementDto;
 import br.com.controlefinaceiro.financeiroapi.movement.entity.Movement;
 import br.com.controlefinaceiro.financeiroapi.movement.service.MovementService;
 import br.com.controlefinaceiro.financeiroapi.response.Response;
+import br.com.controlefinaceiro.financeiroapi.user.entity.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.Arrays;
@@ -31,12 +33,44 @@ public class MovementController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public MovementDto create(@RequestBody @Valid MovementDto dto){
+    public ResponseEntity<Response<MovementDto>> create(@RequestBody @Valid MovementDto dto){
+        Response<MovementDto> response = new Response<>();
         Movement movement = modelMapper.map(dto, Movement.class);
         movement = service.save(movement);
-        return modelMapper.map(movement, MovementDto.class);
+        MovementDto movementDto = modelMapper.map(movement, MovementDto.class);
+        response.setData(movementDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @DeleteMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id){
+        Movement movement = service.getById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        service.delete(movement);
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity<Response<MovementDto>> update(@PathVariable Long id, @RequestBody @Valid MovementDto dto){
+        Response<MovementDto> response = new Response<>();
+        response.setData(
+                service.getById(id)
+                        .map(movement -> {
+                            movement.setTypeCashFlow(dto.getTypeCashFlow());
+                            movement.setDescription(dto.getDescription());
+                            movement.setDueDate(dto.getDueDate());
+                            movement.setPayDay(dto.getPayDay());
+                            movement.setValue(dto.getValue());
+                            movement = service.update(movement);
+                            return modelMapper.map(movement, MovementDto.class);
+                        })
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
+        );
+        return ResponseEntity.ok(response);
+    }
+
+
 
     @GetMapping
     public ResponseEntity<Response<PageImpl<MovementDto>>> get( Long idUser,
