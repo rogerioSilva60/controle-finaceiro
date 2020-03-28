@@ -17,10 +17,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -118,6 +124,31 @@ public class MovementServiceTest {
                 .hasMessage("Fluxo do caixa da movimentacao nao pode salvar vazio.");
 
         Mockito.verify(repository,Mockito.never()).save(movement);
+    }
+
+    @Test
+    @DisplayName("Deve obter a movimentacao por periodo de vencimento e id do usuario paginado.")
+    public void getMovementByIdUserAndDueDateInitialAndDueDateEndPagedTest(){
+        //cenario
+        long idUser = 1l;
+        Movement movement = getMovement();
+        movement.setId(1l);
+        movement.getUser().setId(idUser);
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        List<Movement> movements = Arrays.asList(movement);
+        PageImpl<Movement> page = new PageImpl<>(movements, pageRequest, 1);
+        Mockito.when(repository.findByExpirationDate(Mockito.anyLong(), Mockito.any(Date.class),
+                Mockito.any(Date.class), Mockito.any(PageRequest.class)))
+                .thenReturn(page);
+
+        //execucao
+        Page<Movement> movementPage = service.findByExpirationDate(idUser, movement.getDueDate(), movement.getDueDate(), pageRequest);
+
+        //verificacao
+        assertThat(movementPage.getTotalElements()).isEqualTo(1);
+        assertThat(movementPage.getContent()).isEqualTo(movements);
+        assertThat(movementPage.getPageable().getPageNumber()).isEqualTo(0);
+        assertThat(movementPage.getPageable().getPageSize()).isEqualTo(10);
     }
 
     private Movement getMovement() {
