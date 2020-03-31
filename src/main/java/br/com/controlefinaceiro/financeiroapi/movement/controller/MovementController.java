@@ -1,10 +1,10 @@
 package br.com.controlefinaceiro.financeiroapi.movement.controller;
 
+import br.com.controlefinaceiro.financeiroapi.movement.dto.FinancialAnalysisDto;
 import br.com.controlefinaceiro.financeiroapi.movement.dto.MovementDto;
 import br.com.controlefinaceiro.financeiroapi.movement.entity.Movement;
 import br.com.controlefinaceiro.financeiroapi.movement.service.MovementService;
 import br.com.controlefinaceiro.financeiroapi.response.Response;
-import br.com.controlefinaceiro.financeiroapi.user.entity.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -87,6 +87,15 @@ public class MovementController {
                 .collect(Collectors.toList()) : Arrays.asList();
 
         response.setData(new PageImpl<MovementDto> (movements, pageable, result != null ? result.getTotalElements() : 0));
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/analise-financeiro-pessoal")
+    public ResponseEntity<Response<FinancialAnalysisDto>> getPersonalFinancialAnalysis(
+             Long idUser, Long month, Long year){
+        Response<FinancialAnalysisDto> response = new Response<>();
+        response.setData(service.personalFinancialAnalysis(idUser, month, year));
+
         return ResponseEntity.ok(response);
     }
 }

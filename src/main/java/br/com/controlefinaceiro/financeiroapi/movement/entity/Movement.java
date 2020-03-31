@@ -47,8 +47,9 @@ public class Movement {
     @JoinColumn(name = "id_user")
     private User user;
 
-    @NotNull(message = "Fluxo de caixa e obrigatorio. Os valores permitidos para 'typeCashFlow' sao Receita ou Despesa.")
+
     @Enumerated(EnumType.STRING)
-	@Column(name = "type_cash_flow")
+    @NotNull(message = "Fluxo de caixa e obrigatorio. Os valores permitidos para 'typeCashFlow' sao Receita ou Despesa.")
+    @Column(name = "type_cash_flow")
     private TypeCashFlow typeCashFlow;
 }

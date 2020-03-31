@@ -32,6 +32,14 @@ public enum TypeCashFlow {
                 "Tipo de enumeração desconhecido '" + value + "', Os valores permitidos para 'typeCashFlow' são " + Arrays.toString(values()));
     }
 
+    public static String convert(String value){
+        if(value.equalsIgnoreCase(TypeCashFlow.EXPENCE.key)){
+            return "EXPENCE";
+        } else{
+            return "RECIPE";
+        }
+    }
+
     @Override
     public String toString() { return key; }
 }

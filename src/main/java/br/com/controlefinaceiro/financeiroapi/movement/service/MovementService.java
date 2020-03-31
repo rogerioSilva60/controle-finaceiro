@@ -1,5 +1,6 @@
 package br.com.controlefinaceiro.financeiroapi.movement.service;
 
+import br.com.controlefinaceiro.financeiroapi.movement.dto.FinancialAnalysisDto;
 import br.com.controlefinaceiro.financeiroapi.movement.entity.Movement;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,4 +19,6 @@ public interface MovementService {
     Optional<Movement> getById(long id);
 
     void delete(Movement movement);
+
+    FinancialAnalysisDto personalFinancialAnalysis (long idUser, long month, long year);
 }

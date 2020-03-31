@@ -1,10 +1,12 @@
 package br.com.controlefinaceiro.financeiroapi.movement.controller;
 
+import br.com.controlefinaceiro.financeiroapi.movement.dto.FinancialAnalysisDto;
 import br.com.controlefinaceiro.financeiroapi.movement.dto.MovementDto;
 import br.com.controlefinaceiro.financeiroapi.movement.entity.Movement;
 import br.com.controlefinaceiro.financeiroapi.movement.service.MovementService;
 import br.com.controlefinaceiro.financeiroapi.user.dto.UserDto;
 import br.com.controlefinaceiro.financeiroapi.user.entity.User;
+import br.com.controlefinaceiro.financeiroapi.utils.Calculator;
 import br.com.controlefinaceiro.financeiroapi.utils.DateTime;
 import br.com.controlefinaceiro.financeiroapi.utils.constant.TypeCashFlow;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -286,6 +288,46 @@ public class MovementControllerTest {
         //Verificacao
         mvc.perform(request)
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Deve retorna a analise financeira pessoal do mes escolhido.")
+    public void personalFinancialAnalysisTest() throws Exception{
+        //cenario
+        long idUser = 1l;
+        long month = 1l;
+        long year = 2020;
+        FinancialAnalysisDto dto = FinancialAnalysisDto.builder()
+                .valueGoal(new BigDecimal(800))
+                .valueTotalRecipe(new BigDecimal(1000))
+                .valueTotalExpence(new BigDecimal(900))
+                .build();
+
+        dto.setValueTotalBalance(dto.getValueTotalRecipe().subtract(dto.getValueTotalExpence()));
+
+        BigDecimal resultPercentGoal = Calculator.percentageValue(dto.getValueGoal(), dto.getValueTotalRecipe());
+
+        BigDecimal resultPercentExpence = Calculator.percentageValue(dto.getValueTotalExpence(), dto.getValueTotalRecipe());
+
+        BigDecimal resultPercentMonthlySpend = resultPercentExpence.subtract(resultPercentGoal);
+
+        dto.setValueMonthlySpend(dto.getValueTotalExpence().subtract(dto.getValueGoal()));
+
+        BDDMockito.given(service.personalFinancialAnalysis(Mockito.anyLong(),Mockito.anyLong(), Mockito.anyLong()))
+        .willReturn(dto);
+        //execucao
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(MOVEMENT_API.concat("/analise-financeiro-pessoal" + String.format("?idUser=%s&month=%s&year=%s", idUser, month, year)))
+                .accept(MediaType.APPLICATION_JSON);
+
+        //verificacao
+        mvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("data").isNotEmpty())
+                .andExpect(jsonPath("data.valueGoal").value(dto.getValueGoal()))
+                .andExpect(jsonPath("data.valueTotalRecipe").value(dto.getValueTotalRecipe()))
+                .andExpect(jsonPath("data.valueTotalExpence").value(dto.getValueTotalExpence()))
+                .andExpect(jsonPath("data.valueTotalBalance").value(dto.getValueTotalBalance()));
     }
 
     private MovementDto getMovementDto() {

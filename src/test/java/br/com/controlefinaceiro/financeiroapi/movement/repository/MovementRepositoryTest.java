@@ -1,5 +1,6 @@
 package br.com.controlefinaceiro.financeiroapi.movement.repository;
 
+import br.com.controlefinaceiro.financeiroapi.movement.dto.FinancialAnalysisDto;
 import br.com.controlefinaceiro.financeiroapi.movement.entity.Movement;
 import br.com.controlefinaceiro.financeiroapi.user.entity.User;
 import br.com.controlefinaceiro.financeiroapi.user.repository.UserRepository;
@@ -73,12 +74,36 @@ public class MovementRepositoryTest {
         assertThat(movementPage.getTotalElements()).isEqualTo(1);
     }
 
+    @Test
+    @DisplayName("Deve retorna a soma")
+    public void returnMovementTypeCashFlowTest(){
+        //cenario
+        FinancialAnalysisDto dto = FinancialAnalysisDto.builder()
+                .valueGoal(new BigDecimal(750))
+                .valueTotalRecipe(new BigDecimal(2000))
+                .valueTotalExpence(new BigDecimal(800))
+                .build();
+        Movement movement = getMovement();
+        User user = getUsuario();
+
+        //execucao
+        User userSaved = userRepository.save(user);
+        movement.setUser(userSaved);
+        repository.save(movement);
+        BigDecimal bigDecimal = repository.sumMovementTypeCashFlow(1, 1, 2020,
+                TypeCashFlow.convert(TypeCashFlow.EXPENCE.getKey()));
+
+        //verificacao
+        assertThat(bigDecimal).isNotNull();
+
+    }
+
     private Movement getMovement() {
         return Movement.builder()
                 .description("Energia")
                 .value(new BigDecimal(150))
-                .dueDate(DateTime.create(26,03,2020))
-                .payDay(DateTime.create(26,03,2020))
+                .dueDate(DateTime.create(26,1,2020))
+                .payDay(DateTime.create(26,1,2020))
                 .user(getUsuario())
                 .typeCashFlow(TypeCashFlow.fromValue("DESPESA"))
                 .build();

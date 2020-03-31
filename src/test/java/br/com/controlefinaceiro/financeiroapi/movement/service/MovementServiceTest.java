@@ -1,6 +1,8 @@
 package br.com.controlefinaceiro.financeiroapi.movement.service;
 
+import br.com.controlefinaceiro.financeiroapi.goal.service.GoalService;
 import br.com.controlefinaceiro.financeiroapi.movement.entity.Movement;
+import br.com.controlefinaceiro.financeiroapi.movement.repository.DynamicQuerysMovementRepository;
 import br.com.controlefinaceiro.financeiroapi.movement.repository.MovementRepository;
 import br.com.controlefinaceiro.financeiroapi.movement.service.impl.MovementServiceImpl;
 import br.com.controlefinaceiro.financeiroapi.user.entity.User;
@@ -37,6 +39,10 @@ public class MovementServiceTest {
 
     MovementService service;
     UserService userService;
+    GoalService goalService;
+
+    @MockBean
+    DynamicQuerysMovementRepository dynamicQuerysMovementRepository;
     @MockBean
     MovementRepository repository;
     @MockBean
@@ -46,7 +52,7 @@ public class MovementServiceTest {
     @BeforeEach
     public void setUp(){
         this.userService = new UserServiceImpl(userRepository);
-        this.service = new MovementServiceImpl(repository, userService);
+        this.service = new MovementServiceImpl(repository, dynamicQuerysMovementRepository, userService, goalService);
 
     }
 
