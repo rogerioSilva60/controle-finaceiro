@@ -3,6 +3,7 @@ package br.com.controlefinaceiro.financeiroapi.user.controller;
 import br.com.controlefinaceiro.financeiroapi.user.dto.UserDto;
 import br.com.controlefinaceiro.financeiroapi.user.entity.User;
 import br.com.controlefinaceiro.financeiroapi.user.service.UserService;
+import io.swagger.annotations.ApiOperation;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -29,6 +30,7 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @ApiOperation("Create a user")
     public UserDto create(@RequestBody @Valid UserDto dto){
         User user = modelMapper.map(dto, User.class);
         user = service.save(user);
@@ -36,6 +38,7 @@ public class UserController {
     }
 
     @GetMapping("{id}")
+    @ApiOperation("Get a user")
     public UserDto get(@PathVariable Long id){
         return service.getById(id)
                 .map(user -> modelMapper.map(user, UserDto.class))
@@ -43,6 +46,7 @@ public class UserController {
     }
 
     @DeleteMapping("{id}")
+    @ApiOperation("Delete a user")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id){
         User user = service.getById(id)
@@ -52,6 +56,7 @@ public class UserController {
     }
 
     @PutMapping("{id}")
+    @ApiOperation("Update a user")
     public UserDto update(@PathVariable Long id, @RequestBody @Valid UserDto dto){
         return service.getById(id)
                 .map(user -> {
@@ -65,6 +70,7 @@ public class UserController {
     }
 
     @GetMapping
+    @ApiOperation("Get a user paged")
     public PageImpl<UserDto> get(UserDto dto, Pageable pageable){
         User user = modelMapper.map(dto, User.class);
         Page<User> result = service.find(user, pageable);
