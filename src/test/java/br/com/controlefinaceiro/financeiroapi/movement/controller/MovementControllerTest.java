@@ -304,13 +304,9 @@ public class MovementControllerTest {
                 .build();
 
         dto.setValueTotalBalance(dto.getValueTotalRecipe().subtract(dto.getValueTotalExpence()));
-
         BigDecimal resultPercentGoal = Calculator.percentageValue(dto.getValueGoal(), dto.getValueTotalRecipe());
-
         BigDecimal resultPercentExpence = Calculator.percentageValue(dto.getValueTotalExpence(), dto.getValueTotalRecipe());
-
         BigDecimal resultPercentMonthlySpend = resultPercentExpence.subtract(resultPercentGoal);
-
         dto.setValueMonthlySpend(dto.getValueTotalExpence().subtract(dto.getValueGoal()));
 
         BDDMockito.given(service.personalFinancialAnalysis(Mockito.anyLong(),Mockito.anyLong(), Mockito.anyLong()))

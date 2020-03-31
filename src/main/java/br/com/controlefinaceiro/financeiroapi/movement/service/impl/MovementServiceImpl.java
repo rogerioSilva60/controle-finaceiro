@@ -44,25 +44,26 @@ public class MovementServiceImpl implements MovementService {
 
     @Override
     public Page<Movement> findByExpirationDate(long idUser, Date dueDateInitial, Date dueDateEnd, Pageable pageable) {
-
         Page<Movement> result = repository.findByExpirationDate(idUser, dueDateInitial, dueDateEnd, pageable);
         return result;
     }
 
     @Override
     public Movement update(Movement movement) {
-
-        return null;
+        prepareMovementToUpdateOrDelete(movement);
+        return repository.save(movement);
     }
 
     @Override
     public Optional<Movement> getById(long id) {
-        return null;
+        Optional<Movement> optionalMovement = repository.findById(id);
+        return optionalMovement;
     }
 
     @Override
     public void delete(Movement movement) {
-
+        prepareMovementToUpdateOrDelete(movement);
+        repository.delete(movement);
     }
 
     @Override
@@ -136,6 +137,14 @@ public class MovementServiceImpl implements MovementService {
         } else if(!userService.getById(movement.getUser().getId()).isPresent()){
             throw new BusinessException("Id do usuario não identificado, " +
                     "Verifique se o mesmo foi cadastrado antes de salvar uma movimentacao.");
+        }
+    }
+    private void prepareMovementToUpdateOrDelete(Movement movement) {
+        if(movement == null || movement.getId() == null){
+            throw new IllegalArgumentException("Obrigatorio movimentacao.");
+        }
+        if(!repository.existsById(movement.getId())) {
+            throw new BusinessException("Movimentacao inexistente.");
         }
     }
 }

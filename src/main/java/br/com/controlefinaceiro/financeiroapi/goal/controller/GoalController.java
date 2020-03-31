@@ -56,4 +56,15 @@ public class GoalController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         service.delete(goal);
     }
+
+    @GetMapping("{id}")
+    public ResponseEntity<Response<GoalDto>> get(@PathVariable Long id) {
+        Response<GoalDto> response = new Response<>();
+        response.setData(
+                service.getById(id)
+                        .map(goal -> modelMapper.map(goal, GoalDto.class))
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
+        );
+        return ResponseEntity.ok(response);
+    }
 }

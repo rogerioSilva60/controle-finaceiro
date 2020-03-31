@@ -1,6 +1,9 @@
 package br.com.controlefinaceiro.financeiroapi.movement.service;
 
+import br.com.controlefinaceiro.financeiroapi.goal.repository.GoalRepository;
 import br.com.controlefinaceiro.financeiroapi.goal.service.GoalService;
+import br.com.controlefinaceiro.financeiroapi.goal.service.impl.GoalServiceImpl;
+import br.com.controlefinaceiro.financeiroapi.movement.dto.FinancialAnalysisDto;
 import br.com.controlefinaceiro.financeiroapi.movement.entity.Movement;
 import br.com.controlefinaceiro.financeiroapi.movement.repository.DynamicQuerysMovementRepository;
 import br.com.controlefinaceiro.financeiroapi.movement.repository.MovementRepository;
@@ -47,11 +50,14 @@ public class MovementServiceTest {
     MovementRepository repository;
     @MockBean
     UserRepository userRepository;
+    @MockBean
+    GoalRepository goalRepository;
 
     //Executa antes de cada metodo de teste
     @BeforeEach
     public void setUp(){
         this.userService = new UserServiceImpl(userRepository);
+        this.goalService = new GoalServiceImpl(goalRepository);
         this.service = new MovementServiceImpl(repository, dynamicQuerysMovementRepository, userService, goalService);
 
     }
@@ -148,13 +154,68 @@ public class MovementServiceTest {
                 .thenReturn(page);
 
         //execucao
-        Page<Movement> movementPage = service.findByExpirationDate(idUser, movement.getDueDate(), movement.getDueDate(), pageRequest);
+        Page<Movement> movementPage = service.findByExpirationDate(idUser, movement.getDueDate(),
+                movement.getDueDate(), pageRequest);
 
         //verificacao
         assertThat(movementPage.getTotalElements()).isEqualTo(1);
         assertThat(movementPage.getContent()).isEqualTo(movements);
         assertThat(movementPage.getPageable().getPageNumber()).isEqualTo(0);
         assertThat(movementPage.getPageable().getPageSize()).isEqualTo(10);
+    }
+
+    @Test
+    @DisplayName("Deve retornar uma analise financeira pessoal.")
+    public void getPersonalFinancialAnalysisTest(){
+        //cenario
+        BigDecimal valueRecipe = new BigDecimal(1000);
+        BigDecimal valueExpence = new BigDecimal(0);
+        BigDecimal valueGoal = new BigDecimal(0);
+
+        Mockito.when(repository.sumMovementTypeCashFlow(1, 1,
+                2020, TypeCashFlow.convert(TypeCashFlow.RECIPE.getKey())))
+                .thenReturn(valueRecipe);
+        Mockito.when(repository.sumMovementTypeCashFlow(1, 1,
+                2020, TypeCashFlow.convert(TypeCashFlow.EXPENCE.getKey())))
+                .thenReturn(valueExpence);
+        Mockito.when(goalService.sumByUserMonthAndYear(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong()))
+                .thenReturn(valueGoal);
+
+        //execucao
+        FinancialAnalysisDto financialAnalysisDto = service.personalFinancialAnalysis(1, 1, 2020);
+
+        //verificacao
+        assertThat(financialAnalysisDto).isNotNull();
+        assertThat(financialAnalysisDto.getValueTotalExpence()).isEqualTo(valueExpence);
+        assertThat(financialAnalysisDto.getValueTotalRecipe()).isEqualTo(valueRecipe);
+        assertThat(financialAnalysisDto.getValueGoal()).isEqualTo(valueGoal);
+    }
+
+    @Test
+    @DisplayName("Deve retornar um erro de regra de negocio da analise financeira pessoal " +
+            "caso a receita esteja menor ou iguala zero.")
+    public void getPersonalFinancialAnalysisBusinessExceptionTest(){
+        //cenario
+        BigDecimal valueRecipe = new BigDecimal(-5);
+        BigDecimal valueExpence = new BigDecimal(800);
+        BigDecimal valueGoal = new BigDecimal(500);
+
+        Mockito.when(repository.sumMovementTypeCashFlow(1, 1,
+                2020, TypeCashFlow.convert(TypeCashFlow.RECIPE.getKey())))
+                .thenReturn(valueRecipe);
+        Mockito.when(repository.sumMovementTypeCashFlow(1, 1,
+                2020, TypeCashFlow.convert(TypeCashFlow.EXPENCE.getKey())))
+                .thenReturn(valueExpence);
+        Mockito.when(goalService.sumByUserMonthAndYear(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong()))
+                .thenReturn(valueGoal);
+
+        //execucao
+        Throwable exception = Assertions.catchThrowable(() -> service.personalFinancialAnalysis(1, 1, 2020));
+
+        //verificacao
+        assertThat(exception)
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Informe sua receita para poder analisar suas financas.");
     }
 
     private Movement getMovement() {

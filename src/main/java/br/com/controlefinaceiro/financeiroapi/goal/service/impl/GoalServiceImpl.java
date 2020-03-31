@@ -3,6 +3,7 @@ package br.com.controlefinaceiro.financeiroapi.goal.service.impl;
 import br.com.controlefinaceiro.financeiroapi.goal.entity.Goal;
 import br.com.controlefinaceiro.financeiroapi.goal.repository.GoalRepository;
 import br.com.controlefinaceiro.financeiroapi.goal.service.GoalService;
+import br.com.controlefinaceiro.financeiroapi.movement.entity.Movement;
 import br.com.controlefinaceiro.financeiroapi.utils.exception.BusinessException;
 import org.springframework.stereotype.Service;
 
@@ -28,17 +29,19 @@ public class GoalServiceImpl implements GoalService {
 
     @Override
     public Optional<Goal> getById(long id) {
-        return Optional.empty();
+        return repository.findById(id);
     }
 
     @Override
     public Goal update(Goal goal) {
-        return null;
+        prepareGoalToUpdateOrDelete(goal);
+        return repository.save(goal);
     }
 
     @Override
     public void delete(Goal goal) {
-
+        prepareGoalToUpdateOrDelete(goal);
+        repository.delete(goal);
     }
 
     public BigDecimal sumByUserMonthAndYear(long idUser, long month, long year){
@@ -50,4 +53,12 @@ public class GoalServiceImpl implements GoalService {
         return repository.getByIdUserMonthAndYear(idUser, month, year);
     }
 
+    private void prepareGoalToUpdateOrDelete(Goal goal) {
+        if(goal == null || goal.getId() == null){
+            throw new IllegalArgumentException("Obrigatorio meta.");
+        }
+        if(!repository.existsById(goal.getId())) {
+            throw new BusinessException("Meta inexistente.");
+        }
+    }
 }

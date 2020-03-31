@@ -122,6 +122,7 @@ public class UserServiceTest {
         //cenario
         User user = getUser();
         user.setId(1l);
+        Mockito.when(repository.existsById(Mockito.anyLong())).thenReturn(true);
 
         //execucao
         org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> service.delete(user));
@@ -141,7 +142,7 @@ public class UserServiceTest {
         //verificacao
         assertThat(exception)
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Obrigatorio usuario para deletar.");
+                .hasMessage("Obrigatorio usuario.");
         Mockito.verify(repository, Mockito.never()).delete(user);
     }
 
@@ -156,6 +157,7 @@ public class UserServiceTest {
         User userUpdated = getUser();
         userUpdated.setId(id);
         Mockito.when(repository.save(Mockito.any(User.class))).thenReturn(userUpdated);
+        Mockito.when(repository.existsById(Mockito.anyLong())).thenReturn(true);
 
         //execucao
         User user = service.update(userUpdating);
@@ -177,7 +179,7 @@ public class UserServiceTest {
         //verificacao
         assertThat(exception)
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Obrigatorio usuario para atualizar.");
+                .hasMessage("Obrigatorio usuario.");
         Mockito.verify(repository, Mockito.never()).save(user);
     }
 

@@ -36,18 +36,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(User user) {
-        if(user == null || user.getId() == null){
-            throw new IllegalArgumentException("Obrigatorio usuario para deletar.");
-        }
+        prepareUserToUpdateOrDelete(user);
         repository.delete(user);
     }
 
     @Override
     public User update(User user) {
-        if(user == null || user.getId() == null){
-            throw new IllegalArgumentException("Obrigatorio usuario para atualizar.");
-        }
+        prepareUserToUpdateOrDelete(user);
         return repository.save(user);
+    }
+
+    private void prepareUserToUpdateOrDelete(User user) {
+        if(user == null || user.getId() == null){
+            throw new IllegalArgumentException("Obrigatorio usuario.");
+        }
+        if(!repository.existsById(user.getId())){
+            throw new BusinessException("Usuario inexistente.");
+        }
     }
 
     @Override
@@ -64,7 +69,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User find(Long idUser) {
-        return null;
+        Optional<User> userOptional = repository.findById(idUser);
+        return userOptional.isPresent() ? userOptional.get() : null;
     }
 
 }
